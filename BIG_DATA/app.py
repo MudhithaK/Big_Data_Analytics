@@ -183,7 +183,7 @@ category_bar = px.bar(
 )
 # Improve layout
 category_bar.update_layout(
-    xaxis_tickangle=45,               # rotate labels so they don't overlap
+    xaxis_tickangle=45, 
     height=600,
 )
 # Add value labels on top of bars
@@ -223,7 +223,7 @@ categoryl_bar = px.bar(
 )
 # Improve layout
 categoryl_bar.update_layout(
-    xaxis_tickangle=45,               # rotate labels so they don't overlap
+    xaxis_tickangle=45,
     height=600,
 )
 # Add value labels on top of bars
@@ -254,7 +254,7 @@ fig_corr.update_layout(
 )
 
 # --------------------------------------------------
-# 2. Release Month vs Performance (Plotly version)
+# Release Month vs Performance (Plotly version)
 # --------------------------------------------------
 
 processed_data['Release_Month'] = pd.to_datetime(processed_data['Release_Date']).dt.month
@@ -269,8 +269,7 @@ month_performance.columns = ['_'.join(col).strip() for col in month_performance.
 month_performance.reset_index(inplace=True)
 
 
-# -----------------------------
-# 2.1 Average Views (Line + Fill)
+# Average Views (Line + Fill)
 # -----------------------------
 
 figm_avg_views = go.Figure()
@@ -290,8 +289,7 @@ figm_avg_views.update_layout(
     height=450
 )
 
-# -----------------------------
-# 2.2 Total Views by Month (Bar)
+#Total Views by Month (Bar)
 # -----------------------------
 
 figm_total_views = px.bar(
@@ -310,8 +308,7 @@ figm_total_views.update_layout(
     yaxis_title="Total Views"
 )
 
-# -----------------------------
-# 2.3 Movie Count (Pie Chart)
+# Movie Count (Pie Chart)
 # -----------------------------
 
 figm_pie = px.pie(
@@ -326,8 +323,7 @@ figm_pie.update_layout(width=700, height=450)
 
 
 
-# -----------------------------
-# 2.4 Rating vs Month (Bubble Chart)
+#Rating vs Month (Bubble Chart)
 # -----------------------------
 
 fig_rating = px.scatter(
@@ -349,7 +345,7 @@ fig_rating.update_layout(
 
 
 # -------------------------------------------------
-# 3. Build Dashboard Layout
+# Build Dashboard Layout
 # -------------------------------------------------
 app = dash.Dash(__name__)
 
