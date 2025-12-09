@@ -2,12 +2,18 @@ import dash
 from dash import dcc, html
 import plotly.express as px
 import pandas as pd
+import plotly.graph_objects as go
+
 
 # -------------------------------------------------
 # 1. Load Your Dataset
 # -------------------------------------------------
 df = pd.read_csv("data/cleaned.csv")
+monthly_views = pd.read_csv("data/Feature_Monthly_Views.csv")
+total_views = pd.read_csv("data/Feature_Total_Views.csv")
+processed_data = pd.read_csv("data/Processed_Film_Dataset.csv")
 
+# Convert dates
 df["Release_Date"] = pd.to_datetime(df["Release_Date"])
 df["Viewing_Month"] = pd.to_datetime(df["Viewing_Month"])
 
@@ -16,8 +22,27 @@ df["Release_Month"] = df["Release_Date"].dt.month
 df["Viewing_Year"] = df["Viewing_Month"].dt.year
 df["Viewing_Month_Num"] = df["Viewing_Month"].dt.month
 
+# ===========================================
+# MERGING
+# ===========================================
+monthly_views["view_date"] = pd.to_datetime(
+    monthly_views["view_year"].astype(str) + "-" +
+    monthly_views["view_month"].astype(str) + "-01"
+)
+
+complete_data = monthly_views.merge(total_views, on="Film_Name", how="left")
+
+film_features = processed_data[[
+    "Film_Name", "Category", "Language", "Viewer_Rate",
+    "Avg_Rating_Category", "Avg_Rating_Language"
+]].drop_duplicates()
+
+complete_data = complete_data.merge(film_features, on="Film_Name", how="left")
+
+print("\nMerged dataset shape:", complete_data.shape)
+
 # -------------------------------------------------
-# 2. Create Charts
+# 2. Plotly Charts (Dash Compatible)
 # -------------------------------------------------
 
 # Scatter Plot: Rating vs Views
@@ -37,10 +62,87 @@ fig_bar = px.bar(
     x="Film_Name",
     y="Number_of_Views",
     color="Category",
-    title="Views per Movie"
+    title="Views per Movie",
+    color_continuous_scale="Viridis"
 )
 
-# Line Chart: Views over Release Year
+#Bar chart : top 10 movies.........
+top_movies = total_views.sort_values(
+    'Total_Views', ascending=False
+).head(10)
+
+top_bar = px.bar(
+    top_movies,
+    x="Total_Views",
+    y="Film_Name",
+    orientation="h",
+    title="Top 10 Movies by Total Views",
+    color="Total_Views",
+    color_continuous_scale="Viridis"
+)
+
+# Invert y-axis so highest is on top
+top_bar.update_layout(yaxis=dict(autorange="reversed"))
+
+# Add value labels
+top_bar.update_traces(
+    text=top_movies["Total_Views"],
+    textposition="outside",
+    # optional, to show values
+    width=0.8 
+)
+
+
+#total Views............
+# Histogram of Total Views (Plotly)
+fig_hist = px.histogram(
+    total_views,
+    x="Total_Views",
+    nbins=30,
+    marginal="rug",
+    title="Distribution of Total Views"
+)
+
+# Add outline
+fig_hist.update_traces(
+    marker=dict(
+        line=dict(
+            width=1.5,
+            color="black"
+        )
+    )
+)
+
+# Box Plot of Total Views (Plotly)
+fig_box = px.box(
+    total_views,
+    y="Total_Views",
+    title="Box Plot of Total Views"
+)
+
+
+
+# Line Chart: Monthly Views Trend
+monthly_trend = (
+    monthly_views.groupby(["view_year", "view_month"])["Monthly_Views"]
+    .sum()
+    .reset_index()
+)
+
+monthly_trend["date"] = pd.to_datetime(
+    monthly_trend["view_year"].astype(str) + "-" +
+    monthly_trend["view_month"].astype(str) + "-01"
+)
+
+fig_monthly = px.line(
+    monthly_trend,
+    x="date",
+    y="Monthly_Views",
+    markers=True,
+    title="Monthly Views Trend (All Movies)"
+)
+
+# Line Chart: Views by Release Year
 fig_year = px.line(
     df.sort_values("Release_Year"),
     x="Release_Year",
@@ -49,6 +151,11 @@ fig_year = px.line(
     title="Number of Views by Release Year"
 )
 
+
+#category & language analysis Top 10 Categories by total Views...............
+# Sort categories by total views
+# ---- CATEGORY STATS ----
+# Group by Category and calculate Total Views per Category
 # Category Distribution Pie Chart
 fig_pie = px.pie(
     df,
@@ -56,6 +163,190 @@ fig_pie = px.pie(
     values="Number_of_Views",
     title="Category Contribution to Total Views"
 )
+
+#Total views by language
+# ---------------------------------------
+category_stats = (
+    df.groupby('Category')['Number_of_Views']
+      .sum()
+      .reset_index()
+      .sort_values('Number_of_Views', ascending=False)
+)
+
+category_bar = px.bar(
+    category_stats,
+    x="Category",              # Category on X-axis
+    y="Number_of_Views",       # Views on Y-axis
+    title="Total Views by Category",
+    color="Number_of_Views",
+    color_continuous_scale="Plasma"
+)
+# Improve layout
+category_bar.update_layout(
+    xaxis_tickangle=45,               # rotate labels so they don't overlap
+    height=600,
+)
+# Add value labels on top of bars
+category_bar.update_traces(
+    text=category_stats["Number_of_Views"],
+    textposition="outside"
+)
+
+
+# Sort language category by total views
+# ---- CATEGORY STATS ----
+# Group by Language Category and calculate Total Views per Category
+# Category Distribution Pie Chart
+figL_pie = px.pie(
+    df,
+    names="Language",
+    values="Number_of_Views",
+    title="Language Contribution to Total Views"
+)
+
+#Total views by language
+# ---------------------------------------
+categoryl_stats = (
+    df.groupby('Language')['Number_of_Views']
+      .sum()
+      .reset_index()
+      .sort_values('Number_of_Views', ascending=False)
+)
+
+categoryl_bar = px.bar(
+    categoryl_stats,
+    x="Language",              # Category on X-axis
+    y="Number_of_Views",       # Views on Y-axis
+    title="Total Views by Category",
+    color="Number_of_Views",
+    color_continuous_scale="Speed"
+)
+# Improve layout
+categoryl_bar.update_layout(
+    xaxis_tickangle=45,               # rotate labels so they don't overlap
+    height=600,
+)
+# Add value labels on top of bars
+categoryl_bar.update_traces(
+    text=category_stats["Number_of_Views"],
+    textposition="outside"
+)
+
+
+#Analysis with average values_______--------
+#---------------------------------------------------
+correlation_data = processed_data[['Viewer_Rate', 'Number_of_Views',
+                                   'Avg_Rating_Category', 'Avg_Rating_Language']]
+corr_matrix = correlation_data.corr()
+
+fig_corr = px.imshow(
+    corr_matrix,
+    text_auto=True,
+    color_continuous_scale='RdBu',
+    title="Correlation Matrix",
+    aspect="auto"
+)
+
+fig_corr.update_layout(
+    title_font=dict(size=18, family="Arial", color="black"),
+    width=700,
+    height=600
+)
+
+# --------------------------------------------------
+# 2. Release Month vs Performance (Plotly version)
+# --------------------------------------------------
+
+processed_data['Release_Month'] = pd.to_datetime(processed_data['Release_Date']).dt.month
+
+month_performance = processed_data.groupby('Release_Month').agg({
+    'Number_of_Views': ['mean', 'sum', 'count'],
+    'Viewer_Rate': 'mean'
+}).round(2)
+
+# Flatten multi-index
+month_performance.columns = ['_'.join(col).strip() for col in month_performance.columns]
+month_performance.reset_index(inplace=True)
+
+
+# -----------------------------
+# 2.1 Average Views (Line + Fill)
+# -----------------------------
+
+figm_avg_views = go.Figure()
+
+figm_avg_views.add_trace(go.Scatter(
+    x=month_performance['Release_Month'],
+    y=month_performance['Number_of_Views_mean'],
+    mode="lines+markers",
+    fill="tozeroy"
+))
+
+figm_avg_views.update_layout(
+    title="Average Views by Release Month",
+    xaxis_title="Month",
+    yaxis_title="Average Views",
+    width=700,
+    height=450
+)
+
+# -----------------------------
+# 2.2 Total Views by Month (Bar)
+# -----------------------------
+
+figm_total_views = px.bar(
+    month_performance,
+    x="Release_Month",
+    y="Number_of_Views_sum",
+    color="Release_Month",
+    color_continuous_scale="Viridis",
+    title="Total Views by Release Month"
+)
+
+figm_total_views.update_layout(
+    width=700,
+    height=450,
+    xaxis_title="Month",
+    yaxis_title="Total Views"
+)
+
+# -----------------------------
+# 2.3 Movie Count (Pie Chart)
+# -----------------------------
+
+figm_pie = px.pie(
+    month_performance,
+    values="Number_of_Views_count",
+    names="Release_Month",
+    title="Movie Releases by Month"
+)
+
+figm_pie.update_traces(textinfo="percent")
+figm_pie.update_layout(width=700, height=450)
+
+
+
+# -----------------------------
+# 2.4 Rating vs Month (Bubble Chart)
+# -----------------------------
+
+fig_rating = px.scatter(
+    month_performance,
+    x="Release_Month",
+    y="Viewer_Rate_mean",
+    size="Number_of_Views_sum",
+    opacity=0.7,
+    title="Rating by Release Month (bubble size = total views)"
+)
+
+fig_rating.update_layout(
+    xaxis_title="Month",
+    yaxis_title="Average Rating",
+    width=700,
+    height=450
+)
+
+
 
 # -------------------------------------------------
 # 3. Build Dashboard Layout
@@ -72,21 +363,92 @@ app.layout = html.Div([
         ], style={"width": "48%", "display": "inline-block"}),
 
         html.Div([
-            html.H3("Views by Category"),
-            dcc.Graph(figure=fig_pie)
+            html.H2("Top 10 Movies by Total Views"),
+            dcc.Graph(figure=top_bar),
+        ], style={"width": "48%", "display": "inline-block"})
+
+        
+    ]),
+
+    html.Div([
+        html.H2("Distribution of Total Views", style={"text-align": "center"}),
+        html.Div([
+            html.H2("Distribution of Total Views"),
+            dcc.Graph(figure=fig_hist),
+        ], style={"width": "48%", "display": "inline-block"}),
+
+        html.Div([
+            html.H2("Box Plot of Total Views"),
+            dcc.Graph(figure=fig_box),
         ], style={"width": "48%", "display": "inline-block", "float": "right"}),
     ]),
+
+    html.Div([
+        html.H2("Categary Analysis", style={"text-align": "center"}),
+        html.Div([
+            html.H2("Top 10 Categories by Total Views"),
+            dcc.Graph(figure=category_bar),
+        ], style={"width": "48%", "display": "inline-block"}),
+
+        html.Div([
+            html.H3("Views by Category"),
+            dcc.Graph(figure=fig_pie),
+        ], style={"width": "50%", "display": "inline-block", "float": "right"}),
+    ]),
+
+
+    html.Div([
+        html.H2("Movie Language Analysis", style={"text-align": "center"}),
+        html.Div([
+            html.H2("Top 10 Categories by Total Views"),
+            dcc.Graph(figure=categoryl_bar),
+        ], style={"width": "48%", "display": "inline-block"}),
+
+        html.Div([
+            html.H3("Views by Category"),
+            dcc.Graph(figure=figL_pie),
+        ], style={"width": "50%", "display": "inline-block", "float": "right"}),
+    ]),
+
+    html.Div([
+        html.H2("Monthly View Trend", style={"text-align": "center"}),
+        html.Div([
+            html.H2("Average Views by Relrase month"),
+            dcc.Graph(figure=figm_avg_views),
+        ], style={"width": "48%", "display": "inline-block"}),
+
+        html.Div([
+            html.H3("Total Views by Month (Bar)"),
+            dcc.Graph(figure=figm_total_views),
+        ], style={"width": "50%", "display": "inline-block", "float": "right"}),
+    ]),
+
+    html.Div([
+        html.Div([
+            html.H2("Movie Count (Pie Chart)"),
+            dcc.Graph(figure=figm_pie),
+        ], style={"width": "48%", "display": "inline-block"}),
+
+        html.Div([
+            html.H3("Rating vs Month (Bubble Chart)"),
+            dcc.Graph(figure=fig_rating),
+        ], style={"width": "50%", "display": "inline-block", "float": "right"}),
+    ]),
+
+
 
     html.H2("Views per Movie"),
     dcc.Graph(figure=fig_bar),
 
     html.H2("Views by Release Year"),
-    dcc.Graph(figure=fig_year)
+    dcc.Graph(figure=fig_year),
+
+    html.H2("Monthly Views Trend"),
+    dcc.Graph(figure=fig_monthly)
 ])
 
 # -------------------------------------------------
 # 4. Run the App
 # -------------------------------------------------
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
-
