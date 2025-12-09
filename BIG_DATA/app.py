@@ -354,96 +354,127 @@ fig_rating.update_layout(
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
-    html.H1("Movie Analytics Dashboard", style={"text-align": "center"}),
+    html.H1("Movie Analytics Dashboard", style={"text-align": "center", "font-size":"60px"}),
 
     html.Div([
         html.Div([
-            html.H3("Viewer Rating vs Views"),
+            html.H3("Viewer Rating vs Views", style={"text-align": "center"}),
             dcc.Graph(figure=fig_scatter)
-        ], style={"width": "48%", "display": "inline-block"}),
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "10px"}),
 
         html.Div([
-            html.H2("Top 10 Movies by Total Views"),
+            html.H3("Top 10 Movies by Total Views", style={"text-align": "center"}),
             dcc.Graph(figure=top_bar),
-        ], style={"width": "48%", "display": "inline-block"})
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "10px"})
 
         
-    ]),
+    ],style={
+            "border": "2px solid black",  # black outline
+            "padding": "10px",             # optional: add some padding inside
+            "margin": "10px"  
+            } 
+    ),
 
     html.Div([
-        html.H2("Distribution of Total Views", style={"text-align": "center"}),
+        html.H2("Distribution of Total Views", style={"text-align": "center","font-size":"40px"}),
         html.Div([
-            html.H2("Distribution of Total Views"),
+            html.H3("Distribution of Total Views", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=fig_hist),
-        ], style={"width": "48%", "display": "inline-block"}),
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "10px"}),
 
         html.Div([
-            html.H2("Box Plot of Total Views"),
+            html.H3("Box Plot of Total Views", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=fig_box),
-        ], style={"width": "48%", "display": "inline-block", "float": "right"}),
-    ]),
+        ], style={"width": "48%", "display": "inline-block", "float": "right","border": "2px solid black","margin": "10px"}),
+                    # optional: spacing around the div
+    ],style={
+            "border": "2px solid black",  # black outline
+            "padding": "10px",
+            "margin": "10px"  
+            } 
+    ),
 
     html.Div([
-        html.H2("Categary Analysis", style={"text-align": "center"}),
+        html.H2("Categary Analysis", style={"text-align": "center","font-size":"40px"}),
         html.Div([
-            html.H2("Top 10 Categories by Total Views"),
+            html.H3("Top 10 Categories by Total Views", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=category_bar),
-        ], style={"width": "48%", "display": "inline-block"}),
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px"}),
 
         html.Div([
-            html.H3("Views by Category"),
+            html.H3("Views by Category", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=fig_pie),
-        ], style={"width": "50%", "display": "inline-block", "float": "right"}),
-    ]),
+        ], style={"width": "50%", "display": "inline-block", "float": "right","border": "2px solid black","margin": "1px"}),
+    ],style={
+            "border": "2px solid black",  # black outline
+            "padding": "10px",             # optional: add some padding inside
+            "margin": "10px"  
+            } 
+    ),
 
 
     html.Div([
-        html.H2("Movie Language Analysis", style={"text-align": "center"}),
+        html.H2("Movie Language Analysis", style={"text-align": "center","font-size":"40px"}),
         html.Div([
-            html.H2("Top 10 Categories by Total Views"),
+            html.H3("Top 10 Categories by Total Views", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=categoryl_bar),
-        ], style={"width": "48%", "display": "inline-block"}),
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px"}),
 
         html.Div([
-            html.H3("Views by Category"),
+            html.H3("Views by Category", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=figL_pie),
-        ], style={"width": "50%", "display": "inline-block", "float": "right"}),
-    ]),
+        ], style={"width": "50%", "display": "inline-block", "float": "right","border": "2px solid black","margin": "1px"}),
+    ],style={
+            "border": "2px solid black",  # black outline
+            "padding": "10px",             # optional: add some padding inside
+            "margin": "10px"  
+            } 
+    ),
 
     html.Div([
-        html.H2("Monthly View Trend", style={"text-align": "center"}),
+        html.H2("Monthly View Trend", style={"text-align": "center","font-size":"40px"}),
         html.Div([
-            html.H2("Average Views by Relrase month"),
+            html.H3("Average Views by Relrase month", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=figm_avg_views),
-        ], style={"width": "48%", "display": "inline-block"}),
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px"}),
 
         html.Div([
-            html.H3("Total Views by Month (Bar)"),
+            html.H3("Total Views by Month (Bar)", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=figm_total_views),
-        ], style={"width": "50%", "display": "inline-block", "float": "right"}),
-    ]),
+        ], style={"width": "50%", "display": "inline-block", "float": "right","border": "2px solid black","margin": "1px"}),
+    ],style={
+            "border": "2px solid black",  # black outline
+            "padding": "10px",             # optional: add some padding inside
+            "margin": "10px"  
+            } 
+    ),
 
     html.Div([
         html.Div([
-            html.H2("Movie Count (Pie Chart)"),
+            html.H3("Movie Count (Pie Chart)", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=figm_pie),
-        ], style={"width": "48%", "display": "inline-block"}),
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px"}),
 
         html.Div([
-            html.H3("Rating vs Month (Bubble Chart)"),
+            html.H3("Rating vs Month (Bubble Chart)", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=fig_rating),
-        ], style={"width": "50%", "display": "inline-block", "float": "right"}),
-    ]),
+        ], style={"width": "50%", "display": "inline-block", "float": "right","border": "2px solid black","margin": "1px"}),
+    ],style={
+            "border": "2px solid black",  # black outline
+            "padding": "10px",             # optional: add some padding inside
+            "margin": "10px"  
+            } 
+    ),
 
 
 
-    html.H2("Views per Movie"),
+    html.H2("Views per Movie", style={"text-align": "center","font-size":"40px"}),
     dcc.Graph(figure=fig_bar),
 
-    html.H2("Views by Release Year"),
+    html.H2("Views by Release Year", style={"text-align": "center","font-size":"40px"}),
     dcc.Graph(figure=fig_year),
 
-    html.H2("Monthly Views Trend"),
+    html.H2("Monthly Views Trend", style={"text-align": "center","font-size":"40px"}),
     dcc.Graph(figure=fig_monthly)
 ])
 
