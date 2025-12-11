@@ -54,7 +54,8 @@ fig_scatter = px.scatter(
     color="Category",
     size="Number_of_Views",
     hover_name="Film_Name",
-    title="Viewer Rating vs Number of Views"
+    title="Viewer Rating vs Number of Views",
+    color_continuous_scale="Viridis"
 )
 
 # Bar Chart: Views per Movie
@@ -187,12 +188,12 @@ category_bar = px.bar(
     y="Number_of_Views",       # Views on Y-axis
     title="Total Views by Category",
     color="Number_of_Views",
-    color_continuous_scale="Plasma"
+    color_continuous_scale="Viridis"
 )
 # Improve layout
 category_bar.update_layout(
     xaxis_tickangle=45, 
-    height=600,
+    height=450,
 )
 # Add value labels on top of bars
 category_bar.update_traces(
@@ -389,8 +390,8 @@ fig_heatmap.update_layout(
         title_font=dict(size=12),  # Smaller font
         tickfont=dict(size=10)  # Smaller ticks
     ),
-    height=450,  # Reduced from 600 to 450
-    width=600,   # Reduced from 800 to 600 for better fit
+    #height=450,  
+    #width=600,   
     margin=dict(l=60, r=20, t=80, b=50),  # Adjusted margins
     plot_bgcolor='white'
 )
@@ -430,9 +431,23 @@ fig_rating = px.scatter(
 fig_rating.update_layout(
     xaxis_title="Month",
     yaxis_title="Average Rating",
-    width=700,
-    height=450
+    #width=600,
+    #height=450
 )
+
+
+summary_card_style = {
+    "width": "18%",
+    "padding": "15px",
+    "margin": "10px",
+    "border": "2px solid #333",
+    "border-radius": "12px",
+    "background-color": "white",
+    "box-shadow": "2px 2px 8px rgba(0,0,0,0.2)",
+}
+
+
+
 
 
 #----------------------------------------------------------------------------
@@ -442,26 +457,82 @@ fig_rating.update_layout(
 #----------------------------------------------------------------------------
 app = dash.Dash(__name__)
 
+# -------------------------------------------------
+# DASHBOARD SUMMARY CALCULATIONS
+# -------------------------------------------------
+
+total_movies = df['Film_Name'].nunique()
+total_categories = df['Category'].nunique()
+total_languages = df['Language'].nunique()
+
+top_movie = total_views.sort_values('Total_Views', ascending=False).iloc[0]
+top_movie_name = top_movie['Film_Name']
+top_movie_views = top_movie['Total_Views']
+
+# Peak month by total views
+monthly_sum = df.groupby(df['Viewing_Month'].dt.month_name())['Number_of_Views'].sum()
+peak_month = monthly_sum.idxmax()
+peak_month_views = monthly_sum.max()
+
+app = dash.Dash(__name__)
+
+# -------------------------------------------------
+# DASHBOARD SUMMARY CALCULATIONS
+# -------------------------------------------------
+
+total_movies = df['Film_Name'].nunique()
+total_categories = df['Category'].nunique()
+total_languages = df['Language'].nunique()
+
+top_movie = total_views.sort_values('Total_Views', ascending=False).iloc[0]
+top_movie_name = top_movie['Film_Name']
+top_movie_views = top_movie['Total_Views']
+
+# Peak month by total views
+monthly_sum = df.groupby(df['Viewing_Month'].dt.month_name())['Number_of_Views'].sum()
+peak_month = monthly_sum.idxmax()
+peak_month_views = monthly_sum.max()
+
+
 app.layout = html.Div([
-    html.H1("Movie Analytics Dashboard", style={"text-align": "center", "font-size":"60px"}),
+    html.H1(
+    "Movies Analytics Dashboard",
+    style={
+        "text-align": "center",
+        "font-size": "60px",
+        "color": "#043253",              # Text color
+        "font-family": "Arial, Helvetica, sans-serif",  # Font
+        "font-weight": "bold",            # Bold text
+        "text-shadow": "2px 2px 4px #aaa", # Text shadow
+        "padding": "20px",                # Padding around text
+        "background-color": "#f2f2f2",   # Background color
+        "border-radius": "10px",          # Rounded corners
+        "border": "2px solid #1f77b4"    # Border around text
+    }
+)
+,
 
     html.Div([
         html.Div([
             html.H3("Viewer Rating vs Views", style={"text-align": "center"}),
             dcc.Graph(figure=fig_scatter)
-        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "4px"}),
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px","background-color": "#f9f9f9",
+        "border-radius": "10px"}),
 
         html.Div([
             html.H3("Top 10 Movies by Total Views", style={"text-align": "center"}),
             dcc.Graph(figure=top_bar),
-        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "4px"})
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px","background-color": "#f9f9f9",
+        "border-radius": "10px"})
 
         
     ],style={
-            "border": "2px solid black", 
-            "padding": "10px",             
-            "margin": "10px"  
-            } 
+        "border": "3px solid black",
+        "padding": "20px",
+        "margin": "15px",
+        "background-color": "#f0ebeb",
+        "border-radius": "10px"
+    } 
     ),
 
     
@@ -471,36 +542,43 @@ app.layout = html.Div([
         html.Div([
             html.H3("Total Views by Category", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=category_bar),
-        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px"}),
+        ],style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px","background-color": "#f9f9f9",
+        "border-radius": "10px"}),
 
         html.Div([
             html.H3("Total Views by Language", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=figL_pie),
-        ], style={"width": "50%", "display": "inline-block", "float": "right","border": "2px solid black","margin": "1px"}),
+        ],style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px","background-color": "#f9f9f9",
+        "border-radius": "10px"}),
     ],style={
-            "border": "2px solid black",  
-            "padding": "10px",            
-            "margin": "10px"  
-            } 
+        "border": "3px solid black",
+        "padding": "20px",
+        "margin": "15px",
+        "background-color": "#f0ebeb",
+        "border-radius": "10px"
+    }
     ),
-
 
     html.Div([
         html.H2("Monthly View Trend", style={"text-align": "center","font-size":"40px"}),
         html.Div([
             html.H3("Rating vs Month (Bubble Chart)", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=fig_rating),
-        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px"}),
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px","background-color": "#f9f9f9",
+        "border-radius": "10px"}),
 
         html.Div([
             html.H3("Monthly Viewing Heatmap", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=fig_heatmap),
-        ], style={"width": "50%", "display": "inline-block", "float": "right","border": "2px solid black","margin": "1px"}),
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px","background-color": "#f9f9f9",
+        "border-radius": "10px"}),
     ],style={
-            "border": "2px solid black",  
-            "padding": "10px",             
-            "margin": "10px"  
-            } 
+        "border": "3px solid black",
+        "padding": "20px",
+        "margin": "15px",
+        "background-color": "#f0ebeb",
+        "border-radius": "10px"
+    }
     ),
 
 
@@ -508,12 +586,98 @@ app.layout = html.Div([
     #html.H2("Views per Movie", style={"text-align": "center","font-size":"40px"}),
     #dcc.Graph(figure=fig_bar),
 
-    html.H2("Views by Release Year", style={"text-align": "center","font-size":"40px"}),
-    dcc.Graph(figure=fig_year),
+    html.Div([
+        html.Div([
+            html.H2("Views by Release Year", style={"text-align": "center","font-size":"40px"}),
+            dcc.Graph(figure=fig_year),
 
-    html.H2("Monthly Views Trend", style={"text-align": "center","font-size":"40px"}),
-    dcc.Graph(figure=fig_monthly)
+        ]),
+
+        ],style={
+        "border": "3px solid black",
+        "padding": "20px",
+        "margin": "15px",
+        "background-color": "#f0ebeb",
+        "border-radius": "10px"
+    }
+    ),
+
+    html.Div([
+        html.Div([
+            html.H2("Monthly Views Trend", style={"text-align": "center","font-size":"40px"}),
+            dcc.Graph(figure=fig_monthly),
+
+        ]),
+
+        ],style={
+        "border": "3px solid black",
+        "padding": "20px",
+        "margin": "15px",
+        "background-color": "#f0ebeb",
+        "border-radius": "10px"
+    }
+    ),
+
+
+        # -------------------------------------------------
+    # DASHBOARD SUMMARY SECTION
+    # -------------------------------------------------
+    html.Div([
+        html.H2(" Dashboard Summary", 
+                style={"text-align": "center", "font-size": "45px", "margin-bottom": "10px","color":"white"}),
+
+        html.Div([
+            # Card 1: Total Movies
+            html.Div([
+                html.H3("Total Movies", style={"text-align": "center","font-size": "30px"}),
+                html.P(f"{total_movies}", 
+                       style={"font-size": "30px", "text-align": "center", "color": "blue"})
+            ], style=summary_card_style),
+
+            # Card 2: Categories
+            html.Div([
+                html.H3("Categories", style={"text-align": "center","font-size": "30px"}),
+                html.P(f"{total_categories}",
+                       style={"font-size": "30px", "text-align": "center", "color": "green"})
+            ], style=summary_card_style),
+
+            # Card 3: Languages
+            html.Div([
+                html.H3("Languages", style={"text-align": "center","font-size": "30px"}),
+                html.P(f"{total_languages}",
+                       style={"font-size": "30px", "text-align": "center", "color": "purple"})
+            ], style=summary_card_style),
+
+            # Card 4: Top Movie
+            html.Div([
+                html.H3("Top Movie", style={"text-align": "center","font-size": "30px"}),
+                html.P(f"{top_movie_name} ({top_movie_views:,} views)", 
+                       style={"font-size": "22px", "text-align": "center", "color": "darkred"})
+            ], style=summary_card_style),
+
+            # Card 5: Peak Month
+            html.Div([
+                html.H3("Peak Viewing Month", style={"text-align": "center","font-size": "30px"}),
+                html.P(f"{peak_month} ({peak_month_views:,} views)",
+                       style={"font-size": "22px", "text-align": "center", "color": "darkorange"})
+            ], style=summary_card_style),
+
+        ], style={"display": "flex", 
+                  "justify-content": "space-around",
+                  "flex-wrap": "wrap",
+                  "margin": "20px"}),
+
+    ], style={
+        "border": "3px solid black",
+        "padding": "20px",
+        "margin": "15px",
+        "background-color": "#353333",
+        "border-radius": "10px",
+    }),
+
 ])
+
+
 
 #----------------------------------------------------------------
 # -------------------------------------------------
