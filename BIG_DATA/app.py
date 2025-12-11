@@ -320,6 +320,85 @@ figm_total_views.update_layout(
     yaxis_title="Total Views"
 )
 
+
+# -------------------------------------------------
+# NEW: Heatmap of Views by Month and Day of Week
+# -------------------------------------------------
+
+# Create day of week from viewing month
+df['Day_of_Week'] = df['Viewing_Month'].dt.dayofweek
+df['Month_Name'] = df['Viewing_Month'].dt.month_name()
+df['Day_Name'] = df['Viewing_Month'].dt.day_name()
+
+# Create a pivot table for heatmap
+heatmap_data = df.groupby(['Month_Name', 'Day_Name'])['Number_of_Views'].sum().reset_index()
+
+# Order months chronologically
+month_order = ['January', 'February', 'March', 'April', 'May', 'June', 
+               'July', 'August', 'September', 'October', 'November', 'December']
+
+# Order days of week
+day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+# Create pivot for heatmap
+pivot_heatmap = heatmap_data.pivot(index='Month_Name', columns='Day_Name', values='Number_of_Views')
+
+# Reindex to ensure correct order
+pivot_heatmap = pivot_heatmap.reindex(index=month_order, columns=day_order)
+
+# Fill NaN values with 0
+pivot_heatmap = pivot_heatmap.fillna(0)
+
+# Create heatmap with better sizing
+fig_heatmap = go.Figure(data=go.Heatmap(
+    z=pivot_heatmap.values,
+    x=pivot_heatmap.columns,
+    y=pivot_heatmap.index,
+    colorscale='Viridis',
+    colorbar=dict(
+        title="Total Views",
+        title_font=dict(size=12),
+        thickness=15,
+        len=0.8
+    ),
+    hoverongaps=False,
+    text=pivot_heatmap.values,
+    texttemplate="%{text:,.0f}",
+    textfont={"size": 10, "color": "white"},
+    hovertemplate='<b>%{y} - %{x}</b><br>' +
+                  'Total Views: %{z:,.0f}<extra></extra>'
+))
+
+# Update layout with better margins and sizing
+# Update layout with better margins and sizing
+fig_heatmap.update_layout(
+    title={
+        'text': "Heatmap: Viewing Patterns by Month and Day of Week",
+        'font': {'size': 18},  # Smaller title
+        'y': 0.92,  # Adjusted position
+        'x': 0.5,
+        'xanchor': 'center'
+    },
+    xaxis=dict(
+        title="Day of Week",
+        title_font=dict(size=12),  # Smaller font
+        tickfont=dict(size=10)  # Smaller ticks
+    ),
+    yaxis=dict(
+        title="Month",
+        title_font=dict(size=12),  # Smaller font
+        tickfont=dict(size=10)  # Smaller ticks
+    ),
+    height=450,  # Reduced from 600 to 450
+    width=600,   # Reduced from 800 to 600 for better fit
+    margin=dict(l=60, r=20, t=80, b=50),  # Adjusted margins
+    plot_bgcolor='white'
+)
+# Add grid lines for better readability
+fig_heatmap.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+fig_heatmap.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
+
+
 # Movie Count (Pie Chart)
 # ------------------------------------------------------
 
@@ -370,12 +449,12 @@ app.layout = html.Div([
         html.Div([
             html.H3("Viewer Rating vs Views", style={"text-align": "center"}),
             dcc.Graph(figure=fig_scatter)
-        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "10px"}),
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "4px"}),
 
         html.Div([
             html.H3("Top 10 Movies by Total Views", style={"text-align": "center"}),
             dcc.Graph(figure=top_bar),
-        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "10px"})
+        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "4px"})
 
         
     ],style={
@@ -388,15 +467,15 @@ app.layout = html.Div([
     
 
     html.Div([
-        html.H2("Categary Analysis", style={"text-align": "center","font-size":"40px"}),
+        html.H2("Categary and Language Analysis", style={"text-align": "center","font-size":"40px"}),
         html.Div([
             html.H3("Total Views by Category", style={"text-align": "center","font-size":"25px"}),
             dcc.Graph(figure=category_bar),
         ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px"}),
 
         html.Div([
-            html.H3("Views by Category", style={"text-align": "center","font-size":"25px"}),
-            dcc.Graph(figure=fig_pie),
+            html.H3("Total Views by Language", style={"text-align": "center","font-size":"25px"}),
+            dcc.Graph(figure=figL_pie),
         ], style={"width": "50%", "display": "inline-block", "float": "right","border": "2px solid black","margin": "1px"}),
     ],style={
             "border": "2px solid black",  
@@ -407,33 +486,15 @@ app.layout = html.Div([
 
 
     html.Div([
-        html.H2("Movie Language Analysis", style={"text-align": "center","font-size":"40px"}),
-        html.Div([
-            html.H3("Total Views by Language", style={"text-align": "center","font-size":"25px"}),
-            dcc.Graph(figure=categoryl_bar),
-        ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px"}),
-
-        html.Div([
-            html.H3("Views by Category", style={"text-align": "center","font-size":"25px"}),
-            dcc.Graph(figure=figL_pie),
-        ], style={"width": "50%", "display": "inline-block", "float": "right","border": "2px solid black","margin": "1px"}),
-    ],style={
-            "border": "2px solid black",  
-            "padding": "10px",             
-            "margin": "10px"  
-            } 
-    ),
-
-    html.Div([
         html.H2("Monthly View Trend", style={"text-align": "center","font-size":"40px"}),
         html.Div([
-            html.H3("Average Views by Relrase month", style={"text-align": "center","font-size":"25px"}),
-            dcc.Graph(figure=figm_avg_views),
+            html.H3("Rating vs Month (Bubble Chart)", style={"text-align": "center","font-size":"25px"}),
+            dcc.Graph(figure=fig_rating),
         ], style={"width": "48%", "display": "inline-block","border": "2px solid black","margin": "1px"}),
 
         html.Div([
-            html.H3("Total Views by Month (Bar)", style={"text-align": "center","font-size":"25px"}),
-            dcc.Graph(figure=figm_total_views),
+            html.H3("Monthly Viewing Heatmap", style={"text-align": "center","font-size":"25px"}),
+            dcc.Graph(figure=fig_heatmap),
         ], style={"width": "50%", "display": "inline-block", "float": "right","border": "2px solid black","margin": "1px"}),
     ],style={
             "border": "2px solid black",  
@@ -444,8 +505,8 @@ app.layout = html.Div([
 
 
 
-    html.H2("Views per Movie", style={"text-align": "center","font-size":"40px"}),
-    dcc.Graph(figure=fig_bar),
+    #html.H2("Views per Movie", style={"text-align": "center","font-size":"40px"}),
+    #dcc.Graph(figure=fig_bar),
 
     html.H2("Views by Release Year", style={"text-align": "center","font-size":"40px"}),
     dcc.Graph(figure=fig_year),
